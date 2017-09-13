@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define  MAXBUFSIZE 65536
 #define MAX(x,y) ((x)>(y)?(x):(y))
 
 typedef struct 
@@ -19,7 +20,7 @@ static int bf_realloc(BUFFER *bf, size_t newsize);
 BUFFER *buffer_alloc()
 {
 	BUFFER *pbf = (BUFFER*)malloc(sizeof(BUFFER));
-	pbf->size = 400; /* initial size*/
+	pbf->size = 1024; /* initial size*/
 	pbf->data = (char*)malloc(pbf->size);
 	pbf->readpos = 0;
 	pbf->writepos = 0;
@@ -28,7 +29,7 @@ BUFFER *buffer_alloc()
 
 int bf_realloc(BUFFER *bf, size_t newsize)
 {
-	if(newsize > 5000)
+	if(newsize > MAXBUFSIZE)
 		return -1;
 	if(newsize <= bf->size)
 		return 0;

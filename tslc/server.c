@@ -74,6 +74,7 @@ int main()
 	int epollfd;
 	struct epoll_event ev, evs[MAXEVENTS];
 	int evnum, n;
+	int addr_reuse = 1;
 	client_list_t *clsp;
 
 	clsp = client_list_create();
@@ -89,7 +90,7 @@ int main()
 	ms = server_tcp(8881);
 	if(ms < 0)
 		err_sys("server_tcp");
-	
+
 	if(fcntl(ms, F_SETFL, O_NONBLOCK) < 0)
 		err_sys("fcntl");
 
@@ -110,12 +111,15 @@ int main()
 					if(fcntl(ss, F_SETFL, O_NONBLOCK) < 0)
 						err_sys("fcntl");
 					ev.data.fd = ss;
-					ev.events = EPOLLIN | EPOLLOUT | EPOLLET;
+					ev.events = EPOLLIN ;
 					if(epoll_ctl(epollfd, EPOLL_CTL_ADD, ss, &ev) == 0)
 					{
 						client_list_add(clsp, ss);
 						connnum++;
-/*						printf("new connection, %d\n", connnum);*/
+						if(connnum%10000 == 0)
+						{
+							printf("connection number: %d\n", connnum);
+						}
 					}
 					else
 						err_sys("epoll_ctl");
@@ -137,7 +141,7 @@ int main()
 					else
 					{
 						/*  rlen>0: buffer full; rlen=0, client closed. */
-					
+
 						/* close and remove the socket */
 						if(epoll_ctl(epollfd, EPOLL_CTL_DEL, evs[n].data.fd, NULL) < 0)
 							err_sys("epoll_ctl");
@@ -147,7 +151,7 @@ int main()
 						break;
 					}
 				}
-				
+
 			}
 			if(evs[n].events & EPOLLOUT)
 			{
